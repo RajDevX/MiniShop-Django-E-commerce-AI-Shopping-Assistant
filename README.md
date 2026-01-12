@@ -108,26 +108,26 @@ Home
 
 | Screenshot | Preview |
 | --- | --- |
-| Home page | ![Home page](images/home.png) |
+| Home page | ![Home page](media/images/home.png) |
 
 Authentication
 
 | Screenshot | Preview |
 | --- | --- |
-| Login | ![Login](images/loginpage.png) |
-| Register | ![Register](images/registerpage.png) |
+| Login | ![Login](media/images/loginpage.png) |
+| Register | ![Register](media/images/registerpage.png) |
 
 User
 
 | Screenshot | Preview |
 | --- | --- |
-| User dashboard | ![User dashboard](images/user/userdashboard.png) |
+| User dashboard | ![User dashboard](media/images/user/userdashboard.png) |
 
 Admin
 
 | Screenshot | Preview |
 | --- | --- |
-| Admin dashboard | ![Admin dashboard](images/admin/admin_dashboard.png) |
-| Admin product list | ![Admin product list](images/admin/admin_ProductList.png) |
-| Admin category | ![Admin category](images/admin/admin_Category.png) |
-| Admin orders | ![Admin orders](images/admin/admin_orderList.png) |
+| Admin dashboard | ![Admin dashboard](media/images/admin/admin_dashboard.png) |
+| Admin product list | ![Admin product list](media/images/admin/admin_ProductList.png) |
+| Admin category | ![Admin category](media/images/admin/admin_Category.png) |
+| Admin orders | ![Admin orders](media/images/admin/admin_orderList.png) |
