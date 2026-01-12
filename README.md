@@ -7,6 +7,7 @@ MiniShop is a Django e‑commerce platform with a product catalog, cart/checkout
 - Features
 - Architecture
 - Implementation Steps
+- Installation
 - Local Setup
 - Key Components
 - Observability & QA
@@ -74,6 +75,25 @@ flowchart TD
 2) Install deps: `python3 -m pip install -r requirements.txt`
 3) Apply migrations: `python3 manage.py migrate`
 4) Run server: `python3 manage.py runserver`
+
+## Installation
+
+Clone the repository and set up locally:
+
+1) Clone the repo:
+   - `git clone https://github.com/RajDevX/MiniShop-Django-E-commerce-AI-Shopping-Assistant.git`
+2) Enter the project:
+   - `cd MiniShop-Django-E-commerce-AI-Shopping-Assistant`
+3) Create virtualenv (recommended):
+   - `python3 -m venv venv`
+   - `source venv/bin/activate` (Linux/macOS)
+   - `venv\\Scripts\\activate` (Windows)
+4) Install dependencies:
+   - `python3 -m pip install -r requirements.txt`
+5) Apply migrations:
+   - `python3 manage.py migrate`
+6) Run server:
+   - `python3 manage.py runserver`
 
 ## Key Components
 
