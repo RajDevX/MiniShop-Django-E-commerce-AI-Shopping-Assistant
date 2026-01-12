@@ -1,0 +1,45 @@
+.env
+.env.*
+!.env.example
+
+# Local scratch files
+temp.html
+MyAiAgent.html
+hi.html
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtualenvs
+venv/
+env/
+.venv/
+
+# Django / runtime
+db.sqlite3
+*.sqlite3
+media/product/
+staticfiles/
+*.log
+
+
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+
+temp.html
+.env
+*.key
+*.pem
+
+
+

@@ -1,0 +1,118 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+{% block sidebar_content_management %}
+{% endblock %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h2 class="mb-1">Welcome, {{ request.user.username }}</h2>
+    <div class="text-muted">Your account overview and recent orders.</div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-3 col-md-6">
+    <div class="dashboard-card p-4">
+      <small class="text-uppercase text-muted mb-1">Total Orders</small>
+      <h3 class="fs-4 mb-0">{{ total_orders|default:"0"|intcomma }}</h3>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="dashboard-card p-4">
+      <small class="text-uppercase text-muted mb-1">Pending</small>
+      <h3 class="fs-4 mb-0">{{ pending_orders|default:"0"|intcomma }}</h3>
+      <div class="text-muted small">Pending + Processing</div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="dashboard-card p-4">
+      <small class="text-uppercase text-muted mb-1">Shipped</small>
+      <h3 class="fs-4 mb-0">{{ shipped_orders|default:"0"|intcomma }}</h3>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="dashboard-card p-4">
+      <small class="text-uppercase text-muted mb-1">Total Spent</small>
+      <h3 class="fs-4 mb-0">₹{{ total_spent|default:"0"|intcomma }}</h3>
+      <div class="text-muted small">Paid orders only</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+          <div class="fw-bold">Recent Orders</div>
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'my_orders' %}">My Orders</a>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th class="text-right">Total</th>
+                <th>Payment</th>
+                <th>Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in recent_orders %}
+                <tr>
+                  <td class="font-weight-bold">{{ order.order_number }}</td>
+                  <td>{{ order.created_at|date:"M d, Y" }}</td>
+                  <td>
+                    {% with st=order.status %}
+                      <span class="badge
+                        {% if st == 'PENDING' %} bg-warning text-dark
+                        {% elif st == 'PROCESSING' %} bg-info text-dark
+                        {% elif st == 'SHIPPED' %} bg-primary
+                        {% elif st == 'COMPLETED' %} bg-success
+                        {% elif st == 'CANCELLED' %} bg-danger
+                        {% elif st == 'RETURNED' %} bg-secondary
+                        {% else %} bg-secondary
+                        {% endif %}
+                      ">
+                        {{ order.get_status_display }}
+                      </span>
+                    {% endwith %}
+                  </td>
+                  <td class="text-right">₹{{ order.total_price }}</td>
+                  <td>
+                    {% if order.payment and order.payment.is_paid %}
+                      Paid
+                    {% else %}
+                      Unpaid
+                    {% endif %}
+                    {% if order.address %}
+                      ({{ order.address.get_method_display }})
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% for item in order.items.all|slice:":2" %}
+                      <div class="small">{{ item.product.name }} × {{ item.quantity }}</div>
+                    {% endfor %}
+                    {% if order.items_count|default:0|add:"0" > 2 %}
+                      <div class="text-muted small">+{{ order.items_count|add:"-2" }} more</div>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="6" class="text-center p-4">No orders yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block script %}
+{% endblock %}

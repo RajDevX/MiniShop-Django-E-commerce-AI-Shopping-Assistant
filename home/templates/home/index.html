@@ -1,0 +1,392 @@
+{% extends "home/base.html" %} 
+{% load static %}
+{% block title %}Home{% endblock %} 
+{% block content %}
+    <section id="home-section" class="hero">
+    <div class="home-slider owl-carousel">
+        <div class="slider-item js-fullheight">
+        <div class="overlay"></div>
+        <div class="container-fluid p-0">
+            <div
+            class="row d-md-flex no-gutters slider-text align-items-center justify-content-end"
+            data-scrollax-parent="true"
+            >
+            <img
+                class="one-third order-md-last img-fluid"
+                src="{% static 'home/images/bg_1.png' %}"
+                alt=""
+            />
+            <div
+                class="one-forth d-flex align-items-center ftco-animate"
+                data-scrollax=" properties: { translateY: '70%' }"
+            >
+                <div class="text">
+                <span class="subheading">#New Arrival</span>
+                <div class="horizontal">
+                    <h1 class="mb-4 mt-3">{% if hero_products.0 %}{{ hero_products.0.name }}{% else %}Shoes Collection 2019{% endif %}</h1>
+                    <p class="mb-4">
+                    A small river named Duden flows by their place and supplies it
+                    with the necessary regelialia. It is a paradisematic country.
+                    </p>
+
+                    <p>
+                      {% if hero_products.0 %}
+                        <a href="{% url 'discover_product' hero_products.0.id %}" class="btn-custom">Discover Now</a>
+                      {% else %}
+                        <a href="{% url 'shop' %}" class="btn-custom">Discover Now</a>
+                      {% endif %}
+                    </p>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="slider-item js-fullheight">
+        <div class="overlay"></div>
+        <div class="container-fluid p-0">
+            <div
+            class="row d-flex no-gutters slider-text align-items-center justify-content-end"
+            data-scrollax-parent="true"
+            >
+            <img
+                class="one-third order-md-last img-fluid"
+                src="{% static 'home/images/bg_2.png' %}"
+                alt=""
+            />
+            <div
+                class="one-forth d-flex align-items-center ftco-animate"
+                data-scrollax=" properties: { translateY: '70%' }"
+            >
+                <div class="text">
+                <span class="subheading">#New Arrival</span>
+                <div class="horizontal">
+                    <h1 class="mb-4 mt-3">{% if hero_products.1 %}{{ hero_products.1.name }}{% else %}New Shoes Winter Collection{% endif %}</h1>
+                    <p class="mb-4">
+                    A small river named Duden flows by their place and supplies it
+                    with the necessary regelialia. It is a paradisematic country.
+                    </p>
+
+                    <p>
+                      {% if hero_products.1 %}
+                        <a href="{% url 'discover_product' hero_products.1.id %}" class="btn-custom">Discover Now</a>
+                      {% else %}
+                        <a href="{% url 'shop' %}" class="btn-custom">Discover Now</a>
+                      {% endif %}
+                    </p>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </section>
+
+    <section class="ftco-section ftco-no-pt ftco-no-pb">
+    <div class="container">
+        <div class="row no-gutters ftco-services">
+        <div class="col-lg-4 text-center d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services p-4 py-md-5">
+            <div
+                class="icon d-flex justify-content-center align-items-center mb-4"
+            >
+                <span class="flaticon-bag"></span>
+            </div>
+            <div class="media-body">
+                <h3 class="heading">Free Shipping</h3>
+                <p>
+                Far far away, behind the word mountains, far from the countries
+                Vokalia and Consonantia, there live the blind texts.
+                </p>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-4 text-center d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services p-4 py-md-5">
+            <div
+                class="icon d-flex justify-content-center align-items-center mb-4"
+            >
+                <span class="flaticon-customer-service"></span>
+            </div>
+            <div class="media-body">
+                <h3 class="heading">Support Customer</h3>
+                <p>
+                Far far away, behind the word mountains, far from the countries
+                Vokalia and Consonantia, there live the blind texts.
+                </p>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-4 text-center d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services p-4 py-md-5">
+            <div
+                class="icon d-flex justify-content-center align-items-center mb-4"
+            >
+                <span class="flaticon-payment-security"></span>
+            </div>
+            <div class="media-body">
+                <h3 class="heading">Secure Payments</h3>
+                <p>
+                Far far away, behind the word mountains, far from the countries
+                Vokalia and Consonantia, there live the blind texts.
+                </p>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </section>
+
+	    <section class="ftco-section bg-light">
+	      <div class="container">
+	        <div class="row justify-content-center mb-3 pb-3">
+		          <div class="col-md-12 heading-section text-center ftco-animate">
+		            <h2 class="mb-4">{{ recommended_section_title }}</h2>
+		            <p>
+		              {{ recommended_section_subtitle }}
+		            </p>
+		          </div>
+		        </div>
+		        <div class="row">
+		          {% if recommended_products %}
+		            {% for product in recommended_products %}
+		              <div class="col-sm-12 col-md-6 col-lg-3 ftco-animate d-flex mb-4">
+		                {% include "home/components/product_card.html" with product=product %}
+			              </div>
+			            {% endfor %}
+			          {% else %}
+            <div class="col-12">
+              <div class="alert alert-info text-center" role="alert">
+                <strong>No products found</strong>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+	    </section>
+
+	    {% for section in category_sections %}
+	      <section class="ftco-section">
+	        <div class="container">
+	          <div class="row justify-content-between align-items-center mb-3 pb-3">
+	            <div class="col-md-8 heading-section ftco-animate">
+	              <h2 class="mb-0">{{ section.title }}</h2>
+	              {% if section.seed_product %}
+	                <small class="text-muted d-block mt-2">
+	                  {% if section.subtitle %}{{ section.subtitle }} • {% endif %}
+	                  <a href="{% url 'product_detail' section.seed_product.id %}">View {{ section.seed_product.name }}</a>
+	                </small>
+	              {% endif %}
+	            </div>
+	            <div class="col-md-4 text-md-right mt-2 mt-md-0 ftco-animate">
+	              {% if section.category %}
+	                <a class="btn btn-outline-primary" href="{% url 'category_products' section.category.slug %}">View all</a>
+	              {% endif %}
+	            </div>
+	          </div>
+		          <div class="row">
+		            {% if section.seed_product %}
+		              <div class="col-sm-12 col-md-6 col-lg-3 mb-4 d-flex ftco-animate">
+		                {% include "home/components/product_card.html" with product=section.seed_product %}
+		              </div>
+		            {% endif %}
+
+		            {% if section.products %}
+		              {% for product in section.products %}
+		                <div class="col-sm-12 col-md-6 col-lg-3 mb-4 d-flex ftco-animate">
+		                  {% include "home/components/product_card.html" with product=product %}
+		                </div>
+		              {% endfor %}
+		            {% else %}
+              <div class="col-12">
+                <div class="alert alert-info text-center mb-0" role="alert">
+                  <strong>No products found</strong>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    {% endfor %}
+
+	
+	    <section class="ftco-section testimony-section">
+	    <div class="container">
+	        <div class="row">
+        <div class="col-lg-5">
+            <div class="services-flow">
+            <div class="services-2 p-4 d-flex ftco-animate">
+                <div class="icon">
+                <span class="flaticon-bag"></span>
+                </div>
+                <div class="text">
+                <h3>Free Shipping</h3>
+                <p class="mb-0">
+                    Separated they live in. A small river named Duden flows
+                </p>
+                </div>
+            </div>
+            <div class="services-2 p-4 d-flex ftco-animate">
+                <div class="icon">
+                <span class="flaticon-heart-box"></span>
+                </div>
+                <div class="text">
+                <h3>Valuable Gifts</h3>
+                <p class="mb-0">
+                    Separated they live in. A small river named Duden flows
+                </p>
+                </div>
+            </div>
+            <div class="services-2 p-4 d-flex ftco-animate">
+                <div class="icon">
+                <span class="flaticon-payment-security"></span>
+                </div>
+                <div class="text">
+                <h3>All Day Support</h3>
+                <p class="mb-0">
+                    Separated they live in. A small river named Duden flows
+                </p>
+                </div>
+            </div>
+            <div class="services-2 p-4 d-flex ftco-animate">
+                <div class="icon">
+                <span class="flaticon-customer-service"></span>
+                </div>
+                <div class="text">
+                <h3>All Day Support</h3>
+                <p class="mb-0">
+                    Separated they live in. A small river named Duden flows
+                </p>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="heading-section ftco-animate mb-5">
+            <h2 class="mb-4">Our satisfied customer says</h2>
+            <p>
+                Far far away, behind the word mountains, far from the countries
+                Vokalia and Consonantia, there live the blind texts. Separated they
+                live in
+            </p>
+            </div>
+            <div class="carousel-testimony owl-carousel">
+            <div class="item">
+                <div class="testimony-wrap">
+	                <div
+	                    class="user-img mb-4"
+	                    style="background-image: url('{% static 'home/images/person_1.jpg' %}')"
+	                >
+	                    <span
+	                    class="quote d-flex align-items-center justify-content-center"
+	                    >
+	                    <i class="icon-quote-left"></i>
+                    </span>
+                </div>
+                <div class="text">
+                    <p class="mb-4 pl-4 line">
+                    Far far away, behind the word mountains, far from the
+                    countries Vokalia and Consonantia, there live the blind texts.
+                    </p>
+                    <p class="name">Garreth Smith</p>
+                    <span class="position">Marketing Manager</span>
+                </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="testimony-wrap">
+                <div
+                    class="user-img mb-4"
+                    style="background-image: url('{% static 'home/images/bg_1.jpg' %}')"
+                >
+                    <span
+                    class="quote d-flex align-items-center justify-content-center"
+                    >
+                    <i class="icon-quote-left"></i>
+                    </span>
+                </div>
+                <div class="text">
+                    <p class="mb-4 pl-4 line">
+                    Far far away, behind the word mountains, far from the
+                    countries Vokalia and Consonantia, there live the blind texts.
+                    </p>
+                    <p class="name">Garreth Smith</p>
+                    <span class="position">Interface Designer</span>
+                </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="testimony-wrap">
+                <div
+                    class="user-img mb-4"
+                    style="background-image: url('{% static 'home/images/bg_1.jpg' %}')"
+                >
+                    <span
+                    class="quote d-flex align-items-center justify-content-center"
+                    >
+                    <i class="icon-quote-left"></i>
+                    </span>
+                </div>
+                <div class="text">
+                    <p class="mb-4 pl-4 line">
+                    Far far away, behind the word mountains, far from the
+                    countries Vokalia and Consonantia, there live the blind texts.
+                    </p>
+                    <p class="name">Garreth Smith</p>
+                    <span class="position">UI Designer</span>
+                </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="testimony-wrap">
+                <div
+                    class="user-img mb-4"
+                    style="background-image: url('{% static 'home/images/bg_1.jpg' %}')"
+                >
+                    <span
+                    class="quote d-flex align-items-center justify-content-center"
+                    >
+                    <i class="icon-quote-left"></i>
+                    </span>
+                </div>
+                <div class="text">
+                    <p class="mb-4 pl-4 line">
+                    Far far away, behind the word mountains, far from the
+                    countries Vokalia and Consonantia, there live the blind texts.
+                    </p>
+                    <p class="name">Garreth Smith</p>
+                    <span class="position">Web Developer</span>
+                </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="testimony-wrap">
+                <div
+                    class="user-img mb-4"
+                    style="background-image: url('{% static 'home/images/bg_1.jpg' %}')"
+                >
+                    <span
+                    class="quote d-flex align-items-center justify-content-center"
+                    >
+                    <i class="icon-quote-left"></i>
+                    </span>
+                </div>
+                <div class="text">
+                    <p class="mb-4 pl-4 line">
+                    Far far away, behind the word mountains, far from the
+                    countries Vokalia and Consonantia, there live the blind texts.
+                    </p>
+                    <p class="name">Garreth Smith</p>
+                    <span class="position">System Analyst</span>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </section>
+
+{% endblock %}

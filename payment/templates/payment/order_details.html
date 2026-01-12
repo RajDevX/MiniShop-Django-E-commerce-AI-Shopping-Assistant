@@ -1,0 +1,89 @@
+{% extends "home/base.html" %}
+{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block content %}
+<section class="ftco-section">
+  <div class="container">
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-10 d-flex align-items-center justify-content-between">
+        <div>
+          <h2 class="mb-1">Order {{ order.order_number }}</h2>
+          <div class="text-muted">Placed on {{ order.created_at|date:"M d, Y" }}</div>
+        </div>
+        <a class="btn btn-outline-secondary" href="{% url 'my_orders' %}">Back</a>
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="text-muted">Status</div>
+                <div class="font-weight-bold">{{ order.get_status_display }}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="text-muted">Payment</div>
+                <div class="font-weight-bold">
+                  {% if order.payment and order.payment.is_paid %}
+                    Paid
+                  {% else %}
+                    Unpaid
+                  {% endif %}
+                  {% if order.address %}
+                    ({{ order.address.get_method_display }})
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-4 text-md-right">
+                <div class="text-muted">Total</div>
+                <div class="font-weight-bold">₹{{ order.total_price }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Product</th>
+                    <th class="text-right">Price</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in order.items.all %}
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width:46px;height:46px;object-fit:cover;border-radius:8px;" class="mr-3">
+                          {% endif %}
+                          <div>
+                            <div class="font-weight-bold">{{ item.product.name }}</div>
+                            <div class="text-muted small">{{ item.product.category.name }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-right">₹{{ item.price }}</td>
+                      <td class="text-right">{{ item.quantity }}</td>
+                      <td class="text-right">₹{{ item.total }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="4" class="text-center p-4">No items found for this order.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

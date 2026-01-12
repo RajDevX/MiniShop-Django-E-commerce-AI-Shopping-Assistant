@@ -1,0 +1,51 @@
+/* Small reusable component styles */
+
+/* Bootstrap card tweaks for product cards (used on home + search) */
+.product-card {
+  height: 100%;
+}
+
+.product-card__media {
+  position: relative;
+}
+
+.product-card__img {
+  height: 180px;
+  object-fit: cover;
+}
+
+.product-card__like {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #e11d48;
+  text-decoration: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.product-card__like:hover {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.product-card__like span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.product-card__meta {
+  letter-spacing: 2px;
+}
+
+.product-card__actions .btn {
+  border-radius: 999px;
+}

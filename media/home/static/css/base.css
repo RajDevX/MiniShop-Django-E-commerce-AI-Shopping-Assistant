@@ -1,0 +1,9 @@
+/* Base project overrides/extensions.
+   Keep vendor/theme CSS in `home/static/home/css/*` to avoid UI regressions. */
+
+/* Minor normalization for icon-only buttons/links */
+a:focus,
+button:focus {
+  outline: none;
+}
+

@@ -1,0 +1,40 @@
+/* Layout-level styles (navbar + floating actions) */
+
+.navbar-search {
+  margin: 0.5rem auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 992px) {
+  .navbar-search {
+    margin: 0;
+    width: auto;
+  }
+}
+
+.navbar-search__group {
+  height: 46px;
+  width: 420px;
+  max-width: 100%;
+}
+
+.navbar-search__button {
+  height: 46px;
+  text-decoration: none;
+}
+
+.navbar-search__input {
+  height: 46px;
+  min-width: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 26px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.nav-cart-link {
+  white-space: nowrap;
+}

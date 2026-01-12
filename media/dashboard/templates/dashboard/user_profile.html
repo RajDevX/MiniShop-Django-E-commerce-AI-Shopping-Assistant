@@ -1,0 +1,86 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block title %}Profile{% endblock %}
+{% block sidebar_content_management %}
+{% endblock %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h2 class="mb-1">Profile</h2>
+    <div class="text-muted">Your account information.</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="d-flex align-items-center">
+                {% if profile.avatar %}
+                  <img src="{{ profile.avatar.url }}" alt="Avatar" style="width:72px;height:72px;object-fit:cover;border-radius:50%;" class="me-3">
+                {% else %}
+                  <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,0.08);" class="me-3"></div>
+                {% endif %}
+                <div class="flex-grow-1">
+                  <div class="text-muted mb-1">Profile Picture</div>
+                  {{ profile_form.avatar }}
+                  {% if profile_form.avatar.errors %}
+                    <div class="text-danger small mt-1">{{ profile_form.avatar.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="text-muted mb-1">First Name</div>
+              {{ details_form.first_name }}
+              {% if details_form.first_name.errors %}
+                <div class="text-danger small mt-1">{{ details_form.first_name.errors|striptags }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted mb-1">Last Name</div>
+              {{ details_form.last_name }}
+              {% if details_form.last_name.errors %}
+                <div class="text-danger small mt-1">{{ details_form.last_name.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <div class="text-muted">Username</div>
+              <div class="fw-bold">{{ user_obj.username }}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted">Email</div>
+              <div class="fw-bold">{{ user_obj.email|default:"—" }}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted">Joined</div>
+              <div class="fw-bold">
+                {% if date_joined %}{{ date_joined|date:"M d, Y" }}{% else %}—{% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted">Last Login</div>
+              <div class="fw-bold">
+                {% if last_login %}{{ last_login|date:"M d, Y H:i" }}{% else %}—{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'user_dashboard' %}">Back</a>
+          </div>
+        </form>
+        <div class="mt-4">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'user_settings' %}">Settings</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

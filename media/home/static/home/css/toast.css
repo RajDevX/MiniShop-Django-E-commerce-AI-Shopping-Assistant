@@ -1,0 +1,78 @@
+:root {
+  --toast-z: 99999;
+}
+
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: var(--toast-z);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 360px;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  color: #fff;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 14px;
+  line-height: 1.35;
+  transform: translateY(-4px);
+  opacity: 0;
+  transition: transform 180ms ease, opacity 180ms ease;
+  background: #111827;
+}
+
+.toast.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast__text {
+  flex: 1 1 auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.toast__close {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  opacity: 0.85;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+.toast__close:hover {
+  opacity: 1;
+}
+
+.toast--success {
+  background: #065f46;
+}
+
+.toast--error,
+.toast--danger {
+  background: #b91c1c;
+}
+
+.toast--warning {
+  background: #92400e;
+}
+
+.toast--info {
+  background: #1f2937;
+}

@@ -1,0 +1,175 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm rounded-4">
+        <div class="card-header bg-primary text-white text-center">
+          <h3 class="mb-0">Register</h3>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            {% for field in form %}
+              <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+
+                {% if field.name == "password1" or field.name == "password2" %}
+                  <div class="password-field">
+                    {{ field }}
+                    <button
+                      class="password-toggle-inside"
+                      type="button"
+                      data-password-toggle
+                      data-target="{{ field.id_for_label }}"
+                      aria-label="Toggle password visibility"
+                      aria-pressed="false"
+                      tabindex="0"
+                    >
+                      <span class="icon-eye" aria-hidden="true"></span>
+                    </button>
+                  </div>
+
+                  {% if field.name == "password1" %}
+                    <ul class="password-rules" data-password-rules>
+                      <li class="password-rule" data-rule="length">
+                        <span>At least 8 characters</span>
+                      </li>
+                      <li class="password-rule" data-rule="numeric">
+                        <span>Not entirely numeric</span>
+                      </li>
+                      <li class="password-rule" data-rule="common">
+                        <span>Not a commonly used password</span>
+                      </li>
+                      <li class="password-rule" data-rule="similar">
+                        <span>Not too similar to your personal info</span>
+                      </li>
+                    </ul>
+                  {% endif %}
+                {% else %}
+                  {{ field }}
+                  {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                  {% endif %}
+                {% endif %}
+
+                {% if field.errors %}
+                  <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+
+            <div class="d-grid text-center">
+              <button type="submit" class="btn btn-primary btn-lg">Register</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      const password1 = document.getElementById("id_password1");
+      const password2 = document.getElementById("id_password2");
+      const username = document.getElementById("id_username");
+      const email = document.getElementById("id_email");
+      const rulesRoot = document.querySelector("[data-password-rules]");
+
+      function setRuleState(ruleName, isMet) {
+        if (!rulesRoot) return;
+        const ruleItem = rulesRoot.querySelector(`[data-rule="${ruleName}"]`);
+        if (!ruleItem) return;
+        ruleItem.classList.toggle("is-met", Boolean(isMet));
+      }
+
+      function toTokens(value) {
+        return (value || "")
+          .toLowerCase()
+          .split(/[^a-z0-9]+/g)
+          .filter((part) => part && part.length >= 3);
+      }
+
+      function isCommonPassword(passwordLower) {
+        const commons = [
+          "password",
+          "password1",
+          "password123",
+          "12345678",
+          "qwerty",
+          "admin",
+          "admin123",
+          "welcome",
+          "letmein",
+          "iloveyou",
+          "11111111",
+        ];
+        if (commons.includes(passwordLower)) return true;
+        if (/^(password|admin|qwerty|welcome|letmein)\d*$/.test(passwordLower)) return true;
+        return false;
+      }
+
+      function updateRules() {
+        if (!password1) return;
+        const password = password1.value || "";
+        const passwordLower = password.toLowerCase();
+
+        setRuleState("length", password.length >= 8);
+        setRuleState("numeric", password.length > 0 && !/^\d+$/.test(password));
+        setRuleState("common", password.length > 0 && !isCommonPassword(passwordLower));
+
+        const personalTokens = new Set([
+          ...toTokens(username ? username.value : ""),
+          ...toTokens((email ? email.value : "").split("@")[0]),
+        ]);
+
+        let similar = false;
+        for (const token of personalTokens) {
+          if (token && passwordLower.includes(token)) {
+            similar = true;
+            break;
+          }
+        }
+        setRuleState("similar", password.length > 0 && !similar);
+      }
+
+      document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const targetId = button.getAttribute("data-target");
+          const input = targetId ? document.getElementById(targetId) : null;
+          if (!input) return;
+          const makeVisible = input.type === "password";
+          input.type = makeVisible ? "text" : "password";
+          button.setAttribute("aria-pressed", makeVisible ? "true" : "false");
+          const icon = button.querySelector("span");
+          if (icon) {
+            icon.classList.toggle("icon-eye", !makeVisible);
+            icon.classList.toggle("icon-eye-slash", makeVisible);
+          }
+          input.focus();
+        });
+      });
+
+      [password1, password2, username, email].forEach((el) => {
+        if (!el) return;
+        el.addEventListener("input", updateRules);
+        el.addEventListener("change", updateRules);
+      });
+
+      updateRules();
+    })();
+  </script>
+{% endblock %}

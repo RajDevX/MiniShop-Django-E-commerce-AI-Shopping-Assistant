@@ -1,0 +1,6 @@
+/* Utility classes used to remove inline styles without changing UI */
+
+.u-nowrap {
+  white-space: nowrap !important;
+}
+

@@ -1,0 +1,88 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block title %}Search{% endblock %}
+{% block content %}
+
+<div
+  class="hero-wrap hero-bread"
+  style="background-image: url('{% static 'home/images/bg_6.jpg' %}')"
+>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center">
+      <div class="col-md-9 ftco-animate text-center">
+        <p class="breadcrumbs">
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Search</span>
+        </p>
+        <h1 class="mb-0 bread">Search</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="ftco-section bg-light">
+  <div class="container">
+    <form class="row mb-4" method="get" action="{% url 'product_search' %}">
+      <div class="col-md-10 mb-2 mb-md-0">
+        <input
+          type="text"
+          name="q"
+          class="form-control"
+          placeholder="Search products, description, or category…"
+          value="{{ query }}"
+        />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary btn-block" type="submit">Search</button>
+      </div>
+    </form>
+
+    {% if query and not products %}
+      <div class="alert alert-info text-center" role="alert">
+        No results found for “{{ query }}”.
+      </div>
+    {% endif %}
+
+    <div class="row">
+      {% for product in products %}
+        <div class="col-sm-12 col-md-6 col-lg-4 mb-4 d-flex">
+          {% include "home/components/product_card.html" with product=product %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if products.paginator.num_pages > 1 %}
+      <div class="row mt-4">
+        <div class="col text-center">
+          <div class="block-27">
+            <ul>
+              {% if products.has_previous %}
+                <li><a href="?q={{ query|urlencode }}&page={{ products.previous_page_number }}">&lt;</a></li>
+              {% else %}
+                <li class="disabled"><span>&lt;</span></li>
+              {% endif %}
+
+              {% for num in products.paginator.page_range %}
+                {% if num >= products.number|add:'-2' and num <= products.number|add:'2' %}
+                  {% if products.number == num %}
+                    <li class="active"><span>{{ num }}</span></li>
+                  {% else %}
+                    <li><a href="?q={{ query|urlencode }}&page={{ num }}">{{ num }}</a></li>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+              {% if products.has_next %}
+                <li><a href="?q={{ query|urlencode }}&page={{ products.next_page_number }}">&gt;</a></li>
+              {% else %}
+                <li class="disabled"><span>&gt;</span></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

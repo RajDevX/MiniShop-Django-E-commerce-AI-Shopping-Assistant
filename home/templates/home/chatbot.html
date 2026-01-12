@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecom Genie</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      font-family: 'Roboto', sans-serif;
+    }
+    #chatbox {
+      max-height: calc(100% - 5rem);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(128, 0, 128, 0.5) transparent;
+    }
+    #chatbox::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chatbox::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #chatbox::-webkit-scrollbar-thumb {
+      background-color: rgba(128, 0, 128, 0.5);
+      border-radius: 3px;
+    }
+    .product-card {
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .product-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    }
+    .btn-soft {
+      transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+    }
+    .btn-soft:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    }
+    .bubble {
+      max-width: 48rem;
+    }
+  </style>
+</head>
+
+<body class="bg-blue-50 h-screen flex flex-col">
+  <header class="text-center py-3">
+    <h1 class="text-3xl font-bold">Ecom Genie</h1>
+    <p class="text-xl">Your personal shopping assistant</p>
+  </header>
+
+  <div class="flex-grow overflow-hidden">
+    <div id="chatbox" class="flex flex-col items-start bg-white px-4 py-3 rounded-lg shadow border-4 space-y-2.5 overflow-y-scroll h-full mx-4"></div>
+  </div>
+
+  <div class="fixed bottom-0 inset-x-0 py-2 px-4 flex flex-row mt-5 mb-4 w-full border-t border-gray-200">
+    <textarea class="shadow flex-grow rounded p-2 mr-2 text-black" id="messageInput" rows="1" placeholder="Ask Ecom Genie for products..." style="resize:none; overflow-y:auto"></textarea>
+    <button class="bg-purple-500 rounded py-2 px-4 text-white font-bold" id="sendButton">
+      Ask
+    </button>
+  </div>
+
+<script>
+    const chatbox = document.getElementById("chatbox");
+    const messageInput = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
+    const chatId = crypto.randomUUID();
+
+    let receiving = false;
+    let lastProductIntent = null;
+
+    // AI step (Pico): returns intent + entities ONLY (bridge layer runs on Django).
+    // No UI-side keyword logic; the AI is responsible for extracting entities.
+    const intentSystemPrompt =
+      "You extract intent + entities for an e-commerce assistant. Return ONLY valid JSON (no prose).\n"
+      + 'Schema: {"intent":"search|cart_show|cart_add","entities":{"query":string|null,"category":string|null,"min_price":number|null,"max_price":number|null,"product_id":number|null}}.\n'
+      + "Rules:\n"
+      + "- If the user asks for products (e.g., 'laptops under 500', 'show me books'), set intent=search and set entities.query to the product category/keyword (e.g., 'laptops', 'books').\n"
+      + "- Parse numeric budget constraints into min_price/max_price.\n"
+      + "- If user is greeting or unclear, set intent=search and entities.query=null.\n";
+
+    // AI step (Pico): natural language response (non-product messages or product summaries).
+    const chatSystemPrompt =
+      "You are an AI-powered e-commerce shopping assistant.\n\n"
+      + "IMPORTANT RULES:\n"
+      + "- If product data is provided under AVAILABLE PRODUCTS, use ONLY those products.\n"
+      + "- Do NOT invent products, prices, or links.\n"
+      + "- Do NOT output URLs. The UI shows buttons for viewing/adding.\n"
+      + "- If no products are provided, answer normally and ask clarifying questions when needed.\n"
+      + "- Be concise, helpful, and professional.\n";
+
+    // Bridge layer (Django): validate intent, query products DB, enforce pricing rules, build real URLs.
+    const ASSISTANT_ENDPOINT = "/api/assistant/";
+
+    // Pico WebSocket backend
+    const PICO_WS_URL = "wss://backend.buildpicoapps.com/api/chatbot/chat";
+    const PICO_APP_ID = "walk-there";
+
+    function createMessageElement(text, alignment) {
+      const messageElement = document.createElement("div");
+      messageElement.className = `inline-block my-2.5 p-2.5 rounded-md ${
+        alignment === "left" ? "bg-purple-100 text-black" : "bg-blue-200 text-black"
+      } ${alignment === "left" ? "self-start" : "self-end"} border ${
+        alignment === "left" ? "border-purple-200" : "border-blue-300"
+      } bubble`;
+      messageElement.style.whiteSpace = "pre-wrap";
+      messageElement.textContent = text;
+      return messageElement;
+    }
+
+    const CHAT_HISTORY_KEY = "ecom_genie_chat_history_v1";
+
+    function loadChatHistory() {
+      try {
+        const raw = localStorage.getItem(CHAT_HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveChatHistory(history) {
+      try {
+        localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
+      } catch (_) {
+        // ignore storage errors
+      }
+    }
+
+    function addHistoryEntry(sender, text, ts) {
+      const cleanText = String(text || "").trim();
+      if (!cleanText) return;
+      const history = loadChatHistory();
+      history.push({
+        sender: sender === "user" ? "user" : "bot",
+        text: cleanText,
+        ts: ts || new Date().toISOString(),
+      });
+      saveChatHistory(history);
+    }
+
+    function clearChatHistory() {
+      try {
+        localStorage.removeItem(CHAT_HISTORY_KEY);
+      } catch (_) {
+        // ignore storage errors
+      }
+    }
+
+    function renderStoredMessages() {
+      const history = loadChatHistory();
+      if (!history.length) return false;
+      history.forEach((entry) => {
+        if (!entry || !entry.text) return;
+        const alignment = entry.sender === "user" ? "right" : "left";
+        chatbox.appendChild(createMessageElement(entry.text, alignment));
+      });
+      chatbox.scrollTop = chatbox.scrollHeight;
+      return true;
+    }
+
+    window.clearChatHistory = clearChatHistory;
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    function getIntentFromPico(message) {
+      return new Promise((resolve, reject) => {
+        const websocket = new WebSocket(PICO_WS_URL);
+        let buffer = "";
+
+        websocket.addEventListener("open", () => {
+          websocket.send(
+            JSON.stringify({
+              chatId: chatId,
+              appId: PICO_APP_ID,
+              systemPrompt: intentSystemPrompt,
+              message: message,
+            })
+          );
+        });
+
+        websocket.onmessage = (event) => {
+          buffer += event.data;
+        };
+
+        websocket.onerror = () => reject(new Error("pico_error"));
+        websocket.onclose = () => {
+          try {
+            resolve(JSON.parse(buffer));
+          } catch (_) {
+            reject(new Error("bad_intent_json"));
+          }
+        };
+      });
+    }
+
+    async function callBridge(payload) {
+      const csrfToken = getCookie("csrftoken");
+      const headers = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRFToken"] = csrfToken;
+
+      const res = await fetch(ASSISTANT_ENDPOINT, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+        credentials: "same-origin",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    }
+
+    function buildAvailableProductsContext(products) {
+      if (!Array.isArray(products) || products.length === 0) return "";
+      return (
+        "AVAILABLE PRODUCTS:\n" +
+        products
+          .map((p, idx) => {
+            const name = p?.name || "Product";
+            const price = p?.price ? `$${p.price}` : "";
+            return `${idx + 1}. ${name}${price ? " — " + price : ""}`;
+          })
+          .join("\n")
+      );
+    }
+
+    function streamChatFromPico({ message, systemPrompt, productsForCards }) {
+      return new Promise((resolve) => {
+        const websocket = new WebSocket(PICO_WS_URL);
+        let rawBotText = "";
+
+        const messageElement = createMessageElement("Thinking…", "left");
+        messageElement.classList.add("w-full");
+        chatbox.appendChild(messageElement);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        let thinkingTimer = null;
+        websocket.addEventListener("open", () => {
+          thinkingTimer = window.setInterval(() => {
+            const dots = (messageElement.getAttribute("data-dots") || "").length;
+            const next = ".".repeat((dots + 1) % 4);
+            messageElement.setAttribute("data-dots", next);
+            messageElement.textContent = `Thinking${next}`;
+          }, 350);
+          websocket.send(
+            JSON.stringify({
+              chatId: chatId,
+              appId: PICO_APP_ID,
+              systemPrompt: systemPrompt,
+              message: message,
+            })
+          );
+        });
+
+        websocket.onmessage = (event) => {
+          rawBotText += event.data;
+          if (thinkingTimer) {
+            window.clearInterval(thinkingTimer);
+            thinkingTimer = null;
+            messageElement.removeAttribute("data-dots");
+          }
+          messageElement.textContent = rawBotText;
+          chatbox.scrollTop = chatbox.scrollHeight;
+        };
+
+        websocket.onclose = (event) => {
+          if (thinkingTimer) {
+            window.clearInterval(thinkingTimer);
+            thinkingTimer = null;
+            messageElement.removeAttribute("data-dots");
+          }
+          if (event.code === 1000) {
+            if (rawBotText.trim()) {
+              messageElement.textContent = "";
+              messageElement.appendChild(renderMarkdownLite(rawBotText, productsForCards || []));
+              if (productsForCards && productsForCards.length) {
+                messageElement.appendChild(renderProductCards(productsForCards));
+              }
+              addHistoryEntry("bot", rawBotText);
+            }
+          } else {
+            messageElement.textContent = "Error getting response from server. Refresh the page and try again.";
+            addHistoryEntry("bot", messageElement.textContent);
+          }
+          resolve();
+        };
+      });
+    }
+
+    function cleanBotText(text, products) {
+      let t = String(text || "");
+
+      // Replace markdown links with just the label (remove the URL).
+      t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, "$1");
+
+      // If we are showing product cards, remove duplicated product list lines from the bot text.
+      if (Array.isArray(products) && products.length) {
+        const names = products
+          .map((p) => String(p?.name || "").trim().toLowerCase())
+          .filter(Boolean);
+
+        const lines = t.replace(/\r\n/g, "\n").split("\n");
+        const kept = [];
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          const lower = trimmed.toLowerCase();
+          const listy = /^\d+[\.\)]\s*/.test(trimmed) || lower.includes("price:");
+          const mentionsName = names.some((n) => n && lower.includes(n));
+          const mentionsAction = /view more details|add to cart|view product/i.test(trimmed);
+
+          if (listy && (mentionsName || mentionsAction)) continue;
+          kept.push(line);
+        }
+        t = kept.join("\n");
+      }
+
+      t = t.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      return t;
+    }
+
+    function renderMarkdownLite(text, products) {
+      const container = document.createElement("div");
+      container.className = "whitespace-pre-wrap leading-relaxed";
+
+      const raw = cleanBotText(text, products);
+      const parts = [];
+      let last = 0;
+      const linkRe = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+      let match;
+      while ((match = linkRe.exec(raw))) {
+        if (match.index > last) parts.push({ type: "text", value: raw.slice(last, match.index) });
+        parts.push({ type: "link", label: match[1], url: match[2] });
+        last = match.index + match[0].length;
+      }
+      if (last < raw.length) parts.push({ type: "text", value: raw.slice(last) });
+
+      for (const part of parts) {
+        if (part.type === "text") {
+          // strip simple **bold** markers
+          container.appendChild(document.createTextNode(part.value.replace(/\*\*(.+?)\*\*/g, "$1")));
+        } else {
+          const a = document.createElement("a");
+          a.href = part.url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.className = "text-purple-700 underline hover:text-purple-900 font-semibold";
+          a.textContent = part.label.replace(/\*\*(.+?)\*\*/g, "$1");
+          container.appendChild(a);
+        }
+      }
+      return container;
+    }
+
+    async function addToCart(product) {
+      if (!product?.add_to_cart_url) return;
+      try {
+        await fetch(product.add_to_cart_url, { method: "GET", credentials: "same-origin" });
+        chatbox.appendChild(createMessageElement(`Added “${product.name}” to cart.`, "left"));
+        addHistoryEntry("bot", `Added “${product.name}” to cart.`);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      } catch (_) {
+        chatbox.appendChild(createMessageElement("Couldn't add to cart. Please try again.", "left"));
+        addHistoryEntry("bot", "Couldn't add to cart. Please try again.");
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+    }
+
+    function trimAtWordBoundary(text, maxChars) {
+      const cleaned = String(text || "").trim();
+      if (cleaned.length <= maxChars) return cleaned;
+      const slice = cleaned.slice(0, maxChars);
+      const lastSpace = slice.lastIndexOf(" ");
+      if (lastSpace < 40) return slice.trim() + "...";
+      return slice.slice(0, lastSpace).trim() + "...";
+    }
+
+    function renderProductCards(products) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "mt-3";
+
+      const header = document.createElement("div");
+      header.className = "mb-2 text-xs font-semibold uppercase tracking-wide text-purple-800/80";
+      header.textContent = "Products";
+      wrapper.appendChild(header);
+
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 md:grid-cols-2 gap-3";
+
+      const limited = [];
+      const seen = new Set();
+      for (const p of products || []) {
+        const key = p && (p.id != null ? String(p.id) : String(p.name || ""));
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        limited.push(p);
+        if (limited.length >= 5) break;
+      }
+
+      for (const p of limited) {
+        const card = document.createElement("div");
+        card.className =
+          "product-card rounded-xl border border-purple-200 bg-white p-3 shadow-sm";
+
+        const top = document.createElement("div");
+        top.className = "flex items-center gap-3";
+
+        if (p.image_url) {
+          const img = document.createElement("img");
+          img.src = p.image_url;
+          img.alt = p.name || "Product image";
+          img.loading = "lazy";
+          img.className = "h-12 w-12 rounded-lg object-cover border border-gray-200 bg-gray-50";
+          top.appendChild(img);
+        } else {
+          const ph = document.createElement("div");
+          ph.className = "h-12 w-12 rounded-lg bg-purple-50 border border-purple-100";
+          top.appendChild(ph);
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "min-w-0 flex-1";
+
+        const name = document.createElement("div");
+        name.className = "font-bold text-gray-900 truncate";
+        name.textContent = p.name || "Product";
+
+        const desc = document.createElement("div");
+        desc.className = "mt-1 text-sm text-gray-600";
+        const rawDesc = (p.description || "").trim();
+        if (rawDesc.length >= 12) {
+          desc.textContent = trimAtWordBoundary(rawDesc, 120);
+        } else {
+          desc.textContent = "No description available.";
+        }
+
+        const price = document.createElement("div");
+        price.className = "text-sm text-gray-700";
+        price.textContent = p.price ? `$${p.price}` : "";
+
+        meta.appendChild(name);
+        meta.appendChild(desc);
+        meta.appendChild(price);
+        top.appendChild(meta);
+
+        card.appendChild(top);
+
+        const actions = document.createElement("div");
+        actions.className = "mt-3 flex flex-wrap gap-2";
+
+        const view = document.createElement("a");
+        view.href = p.product_url || "#";
+        view.target = "_blank";
+        view.rel = "noopener noreferrer";
+        view.className =
+          "btn-soft inline-flex items-center justify-center rounded-full border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-50";
+        view.textContent = "View product";
+        view.setAttribute("aria-label", `View product: ${p.name || "Product"}`);
+        actions.appendChild(view);
+
+        if (p.add_to_cart_url) {
+          const add = document.createElement("button");
+          add.type = "button";
+          add.className =
+            "btn-soft inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700";
+          add.textContent = "Add to cart";
+          add.setAttribute("aria-label", `Add to cart: ${p.name || "Product"}`);
+          add.addEventListener("click", () => addToCart(p));
+          actions.appendChild(add);
+        }
+
+        card.appendChild(actions);
+        grid.appendChild(card);
+      }
+
+      wrapper.appendChild(grid);
+      return wrapper;
+    }
+
+    sendButton.addEventListener("click", async () => {
+      if (!receiving && messageInput.value.trim() !== "") {
+        const messageText = messageInput.value.trim();
+        messageInput.value = "";
+        const messageElement = createMessageElement(messageText, "right");
+        chatbox.appendChild(messageElement);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        addHistoryEntry("user", messageText);
+
+        receiving = true;
+        try {
+          let intentPayload = await getIntentFromPico(messageText);
+          const intent = String(intentPayload?.intent || "");
+          const entities = intentPayload?.entities && typeof intentPayload.entities === "object" ? intentPayload.entities : null;
+          const query = entities && typeof entities.query === "string" ? entities.query.trim() : "";
+
+          const followUp = /^(yes|yeah|yep|sure|show me|show|please|ok|okay)$/i.test(messageText.trim());
+          if ((!query && followUp) && lastProductIntent && lastProductIntent.entities) {
+            intentPayload = {
+              intent: lastProductIntent.intent,
+              entities: { ...lastProductIntent.entities },
+            };
+          }
+
+          // If the AI didn't extract a usable product query, let Pico handle the message normally.
+          const finalEntities = intentPayload?.entities && typeof intentPayload.entities === "object"
+            ? intentPayload.entities
+            : null;
+          const finalQuery = finalEntities && typeof finalEntities.query === "string" ? finalEntities.query.trim() : "";
+
+          if (intentPayload?.intent !== "search" || !finalQuery) {
+            await streamChatFromPico({ message: messageText, systemPrompt: chatSystemPrompt, productsForCards: [] });
+            return;
+          }
+
+          // Product intent: use bridge to fetch real products, then let Pico write a natural summary.
+          const bridge = await callBridge(intentPayload);
+          const products = Array.isArray(bridge?.products) ? bridge.products : [];
+
+          if (!products.length) {
+            await streamChatFromPico({ message: messageText, systemPrompt: chatSystemPrompt, productsForCards: [] });
+            return;
+          }
+
+          const productContext = buildAvailableProductsContext(products);
+          const summaryPrompt = chatSystemPrompt + "\n\n" + productContext;
+          await streamChatFromPico({ message: messageText, systemPrompt: summaryPrompt, productsForCards: products });
+          lastProductIntent = { intent: "search", entities: { ...finalEntities } };
+        } catch (_) {
+          chatbox.appendChild(createMessageElement("Error contacting server. Please try again.", "left"));
+          chatbox.scrollTop = chatbox.scrollHeight;
+          addHistoryEntry("bot", "Error contacting server. Please try again.");
+        } finally {
+          receiving = false;
+        }
+      }
+    });
+
+    messageInput.addEventListener("keydown", (event) => {
+      const isEnter = event.key === "Enter" || event.key === "NumpadEnter";
+      if (isEnter && !event.shiftKey && !event.isComposing && !receiving && messageInput.value.trim() !== "") {
+        event.preventDefault();
+        sendButton.click();
+      }
+    });
+
+    function welcomeMessageFirstTime() {
+      const welcomeMessage = "Hello! I'm Ecom Genie, your helpful shopping assistant. Ask me about products or deals!";
+      const messageElement = createMessageElement(welcomeMessage, "left");
+      chatbox.appendChild(messageElement);
+      addHistoryEntry("bot", welcomeMessage);
+    }
+
+    const hasHistory = renderStoredMessages();
+    if (!hasHistory) {
+      welcomeMessageFirstTime();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* Auth page specific tweaks */
+
+.password-field {
+  position: relative;
+}
+
+.password-field input[type="password"],
+.password-field input[type="text"] {
+  padding-right: 3rem;
+}
+
+.password-toggle-inside {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  padding: 0;
+  cursor: pointer;
+}
+
+.password-toggle-inside:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.password-toggle-inside span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.password-rules {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.password-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  color: #6c757d;
+}
+
+.password-rule::before {
+  content: "•";
+  color: rgba(108, 117, 125, 0.6);
+  font-size: 18px;
+  line-height: 1;
+  flex: 0 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-rule.is-met::before {
+  content: "✓";
+  color: #198754;
+  font-weight: 700;
+}
+
+.password-rule.is-met {
+  color: #198754;
+}

@@ -1,0 +1,231 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title> {% block title %}{% endblock %} | Minishop</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="{% static 'home/css/open-iconic-bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/animate.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'home/css/owl.carousel.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/owl.theme.default.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/magnific-popup.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'home/css/aos.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'home/css/ionicons.min.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'home/css/bootstrap-datepicker.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/jquery.timepicker.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'home/css/flaticon.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/icomoon.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/components.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/utilities.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/pages/auth.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}" />
+    <link rel="stylesheet" href="{% static 'home/css/toast.css' %}" />
+    <style>
+      .floating-chatbot {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 2147483000;
+      }
+      .floating-chatbot__btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: #fff;
+        box-shadow: 0 14px 30px rgba(124, 58, 237, 0.32);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        transform: translateZ(0);
+        transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+      }
+      .floating-chatbot__btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 38px rgba(124, 58, 237, 0.42);
+        filter: saturate(1.08);
+        text-decoration: none;
+        color: #fff;
+      }
+      .floating-chatbot__btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.35), 0 18px 38px rgba(124, 58, 237, 0.42);
+      }
+      .floating-chatbot__badge {
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        width: 10px;
+        height: 10px;
+        border-radius: 9999px;
+        background: #22c55e;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 6px 14px rgba(34, 197, 94, 0.35);
+      }
+
+      .floating-chatbot__panel {
+        position: fixed;
+        right: 18px;
+        bottom: 86px;
+        width: 380px;
+        height: 560px;
+        max-width: calc(100vw - 28px);
+        max-height: calc(100vh - 110px);
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.18);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transform-origin: bottom right;
+        transform: translateY(10px) scale(0.98);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 180ms ease, opacity 180ms ease;
+      }
+
+      .floating-chatbot__panel[aria-hidden="false"] {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .floating-chatbot__panel iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+      }
+
+      @media (max-width: 575.98px) {
+        .floating-chatbot {
+          right: 14px;
+          bottom: 14px;
+        }
+        .floating-chatbot__btn {
+          width: 52px;
+          height: 52px;
+        }
+        .floating-chatbot__panel {
+          left: 14px;
+          right: 14px;
+          bottom: 78px;
+          width: auto;
+          height: 70vh;
+          max-height: calc(100vh - 110px);
+          border-radius: 18px;
+          transform-origin: bottom center;
+        }
+      }
+    </style>
+
+  </head>
+  <body class="goto-here">
+    {% include "home/includes/navbar.html" %}
+    {% block content %}
+    {% endblock %}
+    {% include "home/includes/footer.html" %}
+
+    <div class="floating-chatbot" aria-label="Chatbot">
+      <button class="floating-chatbot__btn" type="button" aria-label="Open Ecom Genie chatbot" aria-expanded="false" aria-controls="floating-chatbot-panel">
+        <span class="floating-chatbot__badge" aria-hidden="true"></span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 18.5c-1.657 0-3-1.343-3-3V7.5c0-1.657 1.343-3 3-3h10c1.657 0 3 1.343 3 3v8c0 1.657-1.343 3-3 3H11l-3.5 2.5V18.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M8 9.25h8M8 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="floating-chatbot-panel" class="floating-chatbot__panel" aria-hidden="true">
+      <iframe title="Ecom Genie Chatbot" src="{% url 'chatbot' %}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+
+    <form class="d-none" aria-hidden="true">{% csrf_token %}</form>
+
+    <script src="{% static 'home/js/jquery.min.js' %}"></script>
+    <script src="{% static 'home/js/jquery-migrate-3.0.1.min.js' %}"></script>
+    <script src="{% static 'home/js/popper.min.js' %}"></script>
+    <script src="{% static 'home/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'home/js/jquery.easing.1.3.js' %}"></script>
+    <script src="{% static 'home/js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'home/js/jquery.stellar.min.js' %}"></script>
+    <script src="{% static 'home/js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'home/js/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'home/js/aos.js' %}"></script>
+    <script src="{% static 'home/js/jquery.animateNumber.min.js' %}"></script>
+    <script src="{% static 'home/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'home/js/scrollax.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    <script src="{% static 'home/js/main.js' %}"></script>
+    <script src="{% static 'home/js/likes.js' %}"></script>
+    <script src="{% static 'home/js/toast.js' %}"></script>
+    <script>
+      (function () {
+        var btn = document.querySelector(".floating-chatbot__btn");
+        var panel = document.getElementById("floating-chatbot-panel");
+        if (!btn || !panel) return;
+
+        function setOpen(isOpen) {
+          panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+          btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          try {
+            sessionStorage.setItem("floating_chatbot_open", isOpen ? "1" : "0");
+          } catch (e) {}
+        }
+
+        function isOpen() {
+          return panel.getAttribute("aria-hidden") === "false";
+        }
+
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          setOpen(!isOpen());
+        });
+
+        document.addEventListener("click", function (e) {
+          if (!isOpen()) return;
+          if (panel.contains(e.target) || btn.contains(e.target)) return;
+          setOpen(false);
+        });
+
+        panel.addEventListener("click", function (e) {
+          // Clicking inside window must not close it.
+          e.stopPropagation();
+        });
+
+        try {
+          if (sessionStorage.getItem("floating_chatbot_open") === "1") {
+            setOpen(true);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script>
+      (function () {
+        {% if messages %}
+          {% for message in messages %}
+            window.showToast("{{ message.tags|default:"info" }}", "{{ message|escapejs }}");
+          {% endfor %}
+        {% endif %}
+      })();
+    </script>
+  </body>
+</html>
